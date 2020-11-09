@@ -1,0 +1,3 @@
+#!/bin/sh
+rm test.db --force
+sqlite3 test.db -cmd ".read template.sql" -cmd ".read testdata.sql"
