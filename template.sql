@@ -107,7 +107,7 @@ create table arbejdsbeskrivelse (
   work_area_code        text    not null,
   work_area_name        text    not null,
 
-  -- Key is used to associate foreign data with an arbejdsbeskrivelse
+  -- Key is used to associate external data with an arbejdsbeskrivelse
   -- and must be the same for every export of this project
   key                   blob    not null,
 
