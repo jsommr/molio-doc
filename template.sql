@@ -40,8 +40,6 @@ create table attachment (
 create table bygningsdelsbeskrivelse (
   bygningsdelsbeskrivelse_id    integer primary key,
   name                          text    not null,
-
-  -- Used for references outside of database, must be kept the same across exports
   bygningsdelsbeskrivelse_guid  blob    not null,
   basisbeskrivelse_version_guid blob    not null,
 
