@@ -1,3 +1,3 @@
 @echo off
-del template.db 2>NUL
-sqlite3 template.db -cmd ".read template.sql"
+del file.mspectpl 2>NUL
+sqlite3 file.mspectpl -cmd ".read template.sql"
