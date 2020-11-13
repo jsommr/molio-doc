@@ -26,6 +26,27 @@ If you want to experiment with GZip, you can use [7-Zip](https://www.7-zip.org/)
 
 Standard mime type for Molio Specification files.
 
+File extension: .mspec
+
 **application/vnd.molio.specification.template;version=1**
 
 Files that are identical to `application/vnd.molio.specification;version=1`, but preloaded with data users are supposed to adjust according to their needs.
+
+File extension: .mspectpl
+
+## HTML
+
+Supported html in text-columns:
+
+| Element | Description            |
+|---------|------------------------|
+| p       | Paragraph              |
+| br      | Line break             |
+| em      | Emphasized/italic text |
+| strong  | Bold text              |
+| ul      | Unordered list         |
+| ol      | Ordered list           |
+| li      | List item              |
+| img     | Image                  |
+
+All element attributes must be ignored or removed, except for src on img.
