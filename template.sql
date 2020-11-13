@@ -5,18 +5,18 @@ pragma foreign_keys = on;
 pragma user_version = 1;
 
 -------------------------------------------------------------------------------
--- Projekt
+-- Project
 -------------------------------------------------------------------------------
 
-create table projekt (
-  projekt_id      integer primary key,
-  projekt_guid    blob    not null,
-  projekt_version integer not null,
+create table project (
+  project_id      integer primary key,
+  project_guid    blob    not null,
+  project_version integer not null,
   
-  constraint "projekt_guid is not a valid guid"
+  constraint "project_guid is not a valid guid"
     check (
-      typeof(projekt_guid) = 'blob' and
-      length(projekt_guid) = 16
+      typeof(project_guid) = 'blob' and
+      length(project_guid) = 16
     )
 );
 
@@ -43,39 +43,42 @@ create table attachment (
 );
 
 -------------------------------------------------------------------------------
--- Bygningsdelsbeskrivelse
+-- Construction Element Specification
 -------------------------------------------------------------------------------
 
-create table bygningsdelsbeskrivelse (
-  bygningsdelsbeskrivelse_id    integer primary key,
-  name                          text    not null,
-  bygningsdelsbeskrivelse_guid  blob    not null,
-  basisbeskrivelse_version_guid blob    not null,
+create table construction_element_specification (
+  construction_element_specification_id   integer primary key,
+  construction_element_specification_guid blob    not null,
+  basis_specification_version_guid        blob    not null,
+  name                                    text    not null,
 
-  constraint "bygningsdelsbeskrivelse_guid is not a valid guid"
+  constraint "construction_element_specification_guid is not a valid guid"
     check (
-      typeof(bygningsdelsbeskrivelse_guid) = 'blob' and
-      length(bygningsdelsbeskrivelse_guid) = 16
+      typeof(construction_element_specification_guid) = 'blob' and
+      length(construction_element_specification_guid) = 16
     ),
 
-  constraint "basisbeskrivelse_version_guid is not a valid guid"
+  constraint "basis_specification_version_guid is not a valid guid"
     check (
-      typeof(basisbeskrivelse_version_guid) = 'blob' and
-      length(basisbeskrivelse_version_guid) = 16
+      typeof(basis_specification_version_guid) = 'blob' and
+      length(basis_specification_version_guid) = 16
     )
 );
 
-create table bygningsdelsbeskrivelse_section (
-  bygningsdelsbeskrivelse_section_id integer primary key,
-  bygningsdelsbeskrivelse_id         integer not null,
-  section_no                         integer not null,
-  heading                            text    not null,
-  text                               text    not null default '',
-  molio_section_guid                 blob,
-  parent_id                          integer,
+create table construction_element_specification_section (
+  construction_element_specification_section_id integer primary key,
+  construction_element_specification_id         integer not null,
+  section_no                                    integer not null,
+  heading                                       text    not null,
+  body                                          text    not null default '',
+  molio_section_guid                            blob,
+  parent_id                                     integer,
 
-  foreign key (bygningsdelsbeskrivelse_id) references bygningsdelsbeskrivelse,
-  foreign key (parent_id) references bygningsdelsbeskrivelse_section,
+  foreign key (construction_element_specification_id)
+  references construction_element_specification,
+
+  foreign key (parent_id)
+  references construction_element_specification_section,
 
   constraint "molio_section_guid is not a valid guid"
     check (
@@ -86,44 +89,44 @@ create table bygningsdelsbeskrivelse_section (
 
 -- sqlite treats all null values as different, so a constraint like
 -- unique (parent_id, section_no) won't do, because parent_id can be null.
-create unique index bygningsdelsbeskrivelse_section_unique_idx
-on bygningsdelsbeskrivelse_section (
-  bygningsdelsbeskrivelse_id,
+create unique index construction_element_specification_section_unique_idx
+on construction_element_specification_section (
+  construction_element_specification_id,
   ifnull(parent_id, -1),
   section_no
 );
 
 -------------------------------------------------------------------------------
--- Arbejdsbeskrivelse
+-- Work Specification
 -------------------------------------------------------------------------------
 
-create table arbejdsbeskrivelse (
-  arbejdsbeskrivelse_id integer primary key,
+create table work_specification (
+  work_specification_id integer primary key,
   work_area_code        text    not null,
   work_area_name        text    not null,
 
-  -- Key is used to associate external data with an arbejdsbeskrivelse
+  -- Key is used to associate external data with an work_specification
   -- and must be the same for every export of this project
   key                   blob    not null,
 
   constraint "key is not a valid guid"
     check (
-      key is null or
-      ( typeof(key) = 'blob' and
-        length(key) = 16 ))
+      typeof(key) = 'blob' and
+      length(key) = 16
+    )
 );
 
-create table arbejdsbeskrivelse_section (
-  arbejdsbeskrivelse_section_id integer primary key,
-  arbejdsbeskrivelse_id         integer not null,
+create table work_specification_section (
+  work_specification_section_id integer primary key,
+  work_specification_id         integer not null,
   section_no                    int     not null,
   heading                       text    not null,
-  text                          text    not null default '',
+  body                          text    not null default '',
   molio_section_guid            blob,
   parent_id                     integer,
 
-  foreign key (arbejdsbeskrivelse_id) references arbejdsbeskrivelse,
-  foreign key (parent_id) references arbejdsbeskrivelse_section,
+  foreign key (work_specification_id) references work_specification,
+  foreign key (parent_id) references work_specification_section,
 
   constraint "molio_section_guid is not a valid guid"
     check (
@@ -132,23 +135,26 @@ create table arbejdsbeskrivelse_section (
         length(molio_section_guid) = 16 ))
 );
 
-create table arbejdsbeskrivelse_section_bygningsdelsbeskrivelse (
-  arbejdsbeskrivelse_section_bygningsdelsbeskrivelse_id integer primary key,
-  arbejdsbeskrivelse_section_id                         integer not null,
-  bygningsdelsbeskrivelse_id                            integer not null,
+create table work_specification_section_construction_element_specification (
+  work_specification_section_construction_element_specification_id integer primary key,
+  work_specification_section_id                                    integer not null,
+  construction_element_specification_id                            integer not null,
 
-  foreign key (arbejdsbeskrivelse_section_id) references arbejdsbeskrivelse_section,
-  foreign key (bygningsdelsbeskrivelse_id) references bygningsdelsbeskrivelse,
+  foreign key (work_specification_section_id)
+  references work_specification_section,
 
-  constraint "Same bygningsdelsbeskrivelse cannot be referenced more than once for the same arbejdsbeskrivelse_section"
-    unique (arbejdsbeskrivelse_section_id, bygningsdelsbeskrivelse_id)
+  foreign key (construction_element_specification_id)
+  references construction_element_specification,
+
+  constraint "Same construction_element_specification cannot be referenced more than once for the same work_specification_section"
+    unique (work_specification_section_id, construction_element_specification_id)
 );
 
 -- sqlite treats all null values as different, so a constraint like
 -- unique (parent_id, section_no) won't do, because parent_id can be null.
-create unique index arbejdsbeskrivelse_section_unique_idx
-on arbejdsbeskrivelse_section (
-  arbejdsbeskrivelse_id,
+create unique index work_specification_section_unique_idx
+on work_specification_section (
+  work_specification_id,
   ifnull(parent_id, -1),
   section_no
 );
@@ -161,13 +167,13 @@ on arbejdsbeskrivelse_section (
 
 Description:
 
-  `arbejdsbeskrivelse_section` is a self-referencing table where sections might
+  `work_specification_section` is a self-referencing table where sections might
   have 0 to many sub sections. This view can be joined for useful columns when
   displaying the tree.
 
 Columns:
 
-  arbejdsbeskrivelse_section_id integer
+  work_specification_section_id integer
     Used for joins.
 
   section_path text
@@ -180,47 +186,47 @@ Columns:
 
 Example:
 
-  select * from arbejdsbeskrivelse_section
-  natural join arbejdsbeskrivelse_section_path
+  select * from work_specification_section
+  natural join work_specification_section_path
   order by section_path;
 
 */
-create view arbejdsbeskrivelse_section_path as
+create view work_specification_section_path as
   with recursive tree (
-    arbejdsbeskrivelse_section_id,
+    work_specification_section_id,
     section_no,
     section_path,
     level
   ) as (
     select
-      arbejdsbeskrivelse_section_id,
+      work_specification_section_id,
       section_no,
       cast(section_no as text),
       0 as level
-    from arbejdsbeskrivelse_section
+    from work_specification_section
     where parent_id is null
     union all
     select
-      node.arbejdsbeskrivelse_section_id,
+      node.work_specification_section_id,
       node.section_no,
       tree.section_path || '.' || node.section_no,
       tree.level + 1
-    from arbejdsbeskrivelse_section node, tree
-    where node.parent_id = tree.arbejdsbeskrivelse_section_id
+    from work_specification_section node, tree
+    where node.parent_id = tree.work_specification_section_id
   )
-  select arbejdsbeskrivelse_section_id, section_path, level from tree;
+  select work_specification_section_id, section_path, level from tree;
 
 /**
 
 Description:
 
-  `bygningsdelsbeskrivelse_section` is a self-referencing table where sections might
+  `construction_element_specification_section` is a self-referencing table where sections might
   have 0 to many sub sections. This view can be joined for useful columns when
   displaying the tree.
 
 Columns:
 
-  bygningsdelsbeskrivelse_section_id integer
+  construction_element_specification_section_id integer
     Used for joins.
 
   section_path text
@@ -233,32 +239,32 @@ Columns:
 
 Example:
 
-  select * from bygningsdelsbeskrivelse_section
-  natural join bygningsdelsbeskrivelse_section_path
+  select * from construction_element_specification_section
+  natural join construction_element_specification_section_path
   order by section_path;
 
 */
-create view bygningsdelsbeskrivelse_section_path as
+create view construction_element_specification_section_path as
   with recursive tree (
-    bygningsdelsbeskrivelse_section_id,
+    construction_element_specification_section_id,
     section_no,
     section_path,
     level
   ) as (
     select
-      bygningsdelsbeskrivelse_section_id,
+      construction_element_specification_section_id,
       section_no,
       cast(section_no as text),
       0 as level
-    from bygningsdelsbeskrivelse_section
+    from construction_element_specification_section
     where parent_id is null
     union all
     select
-      node.bygningsdelsbeskrivelse_section_id,
+      node.construction_element_specification_section_id,
       node.section_no,
       tree.section_path || '.' || node.section_no,
       tree.level + 1
-    from bygningsdelsbeskrivelse_section node, tree
-    where node.parent_id = tree.bygningsdelsbeskrivelse_section_id
+    from construction_element_specification_section node, tree
+    where node.parent_id = tree.construction_element_specification_section_id
   )
-  select bygningsdelsbeskrivelse_section_id, section_path, level from tree;
+  select construction_element_specification_section_id, section_path, level from tree;

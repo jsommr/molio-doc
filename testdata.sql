@@ -1,3 +1,3 @@
 .read testdata/attachment.sql
-.read testdata/bygningsdelsbeskrivelse.sql
-.read testdata/arbejdsbeskrivelse.sql
+.read testdata/construction_element_specification.sql
+.read testdata/work_specification.sql

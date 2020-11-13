@@ -36,7 +36,7 @@ File extension: .mspectpl
 
 ## HTML
 
-Supported html in text-columns:
+Supported html in section body-columns:
 
 | Element | Description            |
 |---------|------------------------|
