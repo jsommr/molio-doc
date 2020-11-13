@@ -84,17 +84,6 @@ create table bygningsdelsbeskrivelse_section (
         length(molio_section_guid) = 16 ))
 );
 
-create table bygningsdelsbeskrivelse_section_attachment (
-  bygningsdelsbeskrivelse_section_attachment_id integer primary key,
-  bygningsdelsbeskrivelse_section_id            integer not null,
-  attachment_id                                 integer not null,
-
-  foreign key (bygningsdelsbeskrivelse_section_id)
-  references bygningsdelsbeskrivelse_section,
-
-  foreign key (attachment_id) references attachment
-);
-
 -- sqlite treats all null values as different, so a constraint like
 -- unique (parent_id, section_no) won't do, because parent_id can be null.
 create unique index bygningsdelsbeskrivelse_section_unique_idx
