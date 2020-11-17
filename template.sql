@@ -14,10 +14,13 @@ create table project (
   project_version integer not null,
   
   constraint "project_guid is not a valid guid"
-    check (
-      typeof(project_guid) = 'blob' and
-      length(project_guid) = 16
-    )
+  check (
+    typeof(project_guid) = 'blob' and
+    length(project_guid) = 16
+  ),
+
+  constraint "Non-integer value used for project_version"
+  check (typeof(project_version) = 'integer')
 );
 
 -------------------------------------------------------------------------------
@@ -34,10 +37,10 @@ create table attachment (
   constraint "content is not a blob" check (typeof(content) = 'blob'),
 
   constraint "hash is not a valid SHA1 hash"
-    check (
-      hash is null or
-      ( typeof(hash) = 'blob' and
-        length(hash) = 20 )),
+  check (
+    hash is null or
+    ( typeof(hash) = 'blob' and
+      length(hash) = 20 )),
 
   constraint "duplicate hash detected" unique (hash)
 );
@@ -47,22 +50,15 @@ create table attachment (
 -------------------------------------------------------------------------------
 
 create table construction_element_specification (
-  construction_element_specification_id   integer primary key,
-  construction_element_specification_guid blob    not null,
-  basis_specification_version_guid        blob    not null,
-  name                                    text    not null,
+  construction_element_specification_id integer primary key,
+  molio_specification_guid              blob    not null,
+  title                                 text    not null,
 
-  constraint "construction_element_specification_guid is not a valid guid"
-    check (
-      typeof(construction_element_specification_guid) = 'blob' and
-      length(construction_element_specification_guid) = 16
-    ),
-
-  constraint "basis_specification_version_guid is not a valid guid"
-    check (
-      typeof(basis_specification_version_guid) = 'blob' and
-      length(basis_specification_version_guid) = 16
-    )
+  constraint "molio_specification_guid is not a valid guid"
+  check (
+    typeof(molio_specification_guid) = 'blob' and
+    length(molio_specification_guid) = 16
+  )
 );
 
 create table construction_element_specification_section (
@@ -81,18 +77,19 @@ create table construction_element_specification_section (
   references construction_element_specification_section,
 
   constraint "molio_section_guid is not a valid guid"
-    check (
-      molio_section_guid is null or
-      ( typeof(molio_section_guid) = 'blob' and
-        length(molio_section_guid) = 16 ))
+  check (
+    molio_section_guid is null or
+    ( typeof(molio_section_guid) = 'blob' and
+      length(molio_section_guid) = 16 )),
+
+  constraint "Non-integer value used for section_no"
+  check (typeof(section_no) = 'integer')
 );
 
--- sqlite treats all null values as different, so a constraint like
--- unique (parent_id, section_no) won't do, because parent_id can be null.
 create unique index construction_element_specification_section_unique_idx
 on construction_element_specification_section (
   construction_element_specification_id,
-  ifnull(parent_id, -1),
+  ifnull(parent_id, -1), -- All nulls are treated as unique, convert to -1 instead
   section_no
 );
 
@@ -110,10 +107,10 @@ create table work_specification (
   key                   blob    not null,
 
   constraint "key is not a valid guid"
-    check (
-      typeof(key) = 'blob' and
-      length(key) = 16
-    )
+  check (
+    typeof(key) = 'blob' and
+    length(key) = 16
+  )
 );
 
 create table work_specification_section (
@@ -129,10 +126,13 @@ create table work_specification_section (
   foreign key (parent_id) references work_specification_section,
 
   constraint "molio_section_guid is not a valid guid"
-    check (
-      molio_section_guid is null or
-      ( typeof(molio_section_guid) = 'blob' and
-        length(molio_section_guid) = 16 ))
+  check (
+    molio_section_guid is null or
+    ( typeof(molio_section_guid) = 'blob' and
+      length(molio_section_guid) = 16 )),
+
+  constraint "Non-integer value used for section_no"
+  check (typeof(section_no) = 'integer')
 );
 
 create table work_specification_section_construction_element_specification (
@@ -147,15 +147,13 @@ create table work_specification_section_construction_element_specification (
   references construction_element_specification,
 
   constraint "Same construction_element_specification cannot be referenced more than once for the same work_specification_section"
-    unique (work_specification_section_id, construction_element_specification_id)
+  unique (work_specification_section_id, construction_element_specification_id)
 );
 
--- sqlite treats all null values as different, so a constraint like
--- unique (parent_id, section_no) won't do, because parent_id can be null.
 create unique index work_specification_section_unique_idx
 on work_specification_section (
   work_specification_id,
-  ifnull(parent_id, -1),
+  ifnull(parent_id, -1), -- All nulls are treated as unique, convert to -1 instead
   section_no
 );
 
@@ -165,7 +163,7 @@ on work_specification_section (
 
 -- Used to store any kind of custom key-value pairs
 create table custom_data (
-  key   text not null,
+  key   text primary key,
   value blob
 );
 

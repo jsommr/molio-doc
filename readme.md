@@ -9,7 +9,7 @@ Install SQLite and add the folder where sqlite3.exe is located to PATH. Use Choc
 
 **Running on Ubuntu**
 
-Install SQLite via `sudo apt-get install sqlite3`
+`sudo apt-get install sqlite3`
 
 **Building the database**
 
@@ -48,5 +48,12 @@ Supported html in section body-columns:
 | ol      | Ordered list           |
 | li      | List item              |
 | img     | Image                  |
+| table   | Table                  |
+| thead   | Table header           |
+| tbody   | Table body             |
+| tfoot   | Table footer           |
+| tr      | Table row              |
+| td      | Table data cell        |
+| th      | Table heading cell     |
 
-All element attributes must be ignored or removed, except for src on img.
+All element attributes must be removed, except for src on img.

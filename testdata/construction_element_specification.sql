@@ -1,8 +1,8 @@
-insert into construction_element_specification (construction_element_specification_id, name, construction_element_specification_guid, basis_specification_version_guid)
-values (200, 'En construction_element_specification', randomblob(16), randomblob(16));
+insert into construction_element_specification (construction_element_specification_id, title, molio_specification_guid)
+values (200, 'En construction_element_specification', randomblob(16));
 
-insert into construction_element_specification (construction_element_specification_id, name, construction_element_specification_guid, basis_specification_version_guid)
-values (201, 'En anden construction_element_specification', randomblob(16), randomblob(16));
+insert into construction_element_specification (construction_element_specification_id, title, molio_specification_guid)
+values (201, 'En anden construction_element_specification', randomblob(16));
 
 insert into construction_element_specification_section (
   construction_element_specification_id,
