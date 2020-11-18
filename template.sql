@@ -82,7 +82,7 @@ create table project (
 
       name - Attachment name. Optional.
 
-      hash
+      sha1_hash
          SHA1 hash of `content`. Used to determine if a file is already
          attached. Optional.
 */
@@ -91,7 +91,7 @@ create table attachment (
   mime_type     text    not null,
   content       blob    not null,
   name          text,
-  hash          blob,
+  sha1_hash     blob,
 
   constraint "content is not a blob" check (typeof(content) = 'blob'),
 
