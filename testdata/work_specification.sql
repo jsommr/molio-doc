@@ -1,5 +1,5 @@
-insert into work_specification (work_specification_id, work_area_code, work_area_name, key)
-values (400, '250', 'Murværk', randomblob(16));
+insert into work_specification (work_specification_id, molio_specification_guid, work_area_code, work_area_name)
+values (400, randomblob(16), '250', 'Murværk');
 
 insert into work_specification_section (
   work_specification_id,
