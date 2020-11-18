@@ -95,13 +95,13 @@ create table attachment (
 
   constraint "content is not a blob" check (typeof(content) = 'blob'),
 
-  constraint "hash is not a valid SHA1 hash"
+  constraint "sha1_hash is not a valid SHA1 hash"
   check (
-    hash is null or
-    (typeof(hash) = 'blob' and
-     length(hash) = 20)),
+    sha1_hash is null or
+    (typeof(sha1_hash) = 'blob' and
+     length(sha1_hash) = 20)),
 
-  constraint "duplicate hash detected" unique (hash)
+  constraint "duplicate sha1_hash detected" unique (sha1_hash)
 );
 
 /* Table: Construction Element Specification
