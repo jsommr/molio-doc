@@ -18,9 +18,9 @@ pragma user_version = 1;
 
       name - Project name.
 
-      released - ??
-
-      release_date - ?? Format: YYYY-MM-DD
+      release_date
+         When this document is sent to a recipient, someone who will perform
+         what is specified. Format: YYYY-MM-DD
 
       revision_date
          Last document change date. Update whenever the user saves the
@@ -28,9 +28,10 @@ pragma user_version = 1;
          
       revision - Incremented whenever the user saves the document.
 
-      tendering_organization_name - ??
+      created_by_organization
+         Name of the organization that created this document. 
 
-      contract - ??
+      contract - Works carried out in accordance with an agreement.
 
       created_by - Fullname of the creator of this document.
 
@@ -39,24 +40,20 @@ pragma user_version = 1;
       approved_by - Fullname of the person who approved this document. Optional.
 */
 create table project (
-  project_guid                blob    primary key,
-  name                        text    not null,
-  released                    integer not null default 0,
-  release_date                text    not null,
-  revision_date               text    not null default (date()),
-  revision                    integer not null default 0,
-  tendering_organization_name text    not null,
-  contract                    text    not null,
-  created_by                  text    not null,
-  reviewed_by                 text,
-  approved_by                 text,
+  project_guid            blob    primary key,
+  name                    text    not null,
+  release_date            text    not null,
+  revision_date           text    not null default (date()),
+  revision                integer not null default 0,
+  created_by_organization text    not null,
+  contract                text    not null,
+  created_by              text    not null,
+  reviewed_by             text,
+  approved_by             text,
   
   constraint "project_guid is not a valid guid"
   check (typeof(project_guid) = 'blob' and
          length(project_guid) = 16),
-
-  constraint "released should be either 0 (false) or 1 (true)"
-  check (released = 0 or released = 1),
 
   constraint "Invalid date used for release_date"
   check(date(release_date) is not null),
