@@ -28,10 +28,10 @@ pragma user_version = 1;
          
       revision - Incremented whenever the user saves the document.
 
-      created_by_organization
-         Name of the organization that created this document. 
-
       contract - Works carried out in accordance with an agreement.
+
+      created_by_organization
+         Name of the organization that created this document.
 
       created_by - Fullname of the creator of this document.
 
