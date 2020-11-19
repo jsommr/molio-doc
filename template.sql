@@ -56,13 +56,13 @@ create table project (
          length(project_guid) = 16),
 
   constraint "Invalid date used for release_date"
-  check(date(release_date) is not null),
+  check (date(release_date) is not null),
 
   constraint "Non-integer value used for revision"
   check (typeof(revision) = 'integer'),
 
   constraint "Invalid date used for revision_date"
-  check(date(revision_date) is not null)
+  check (date(revision_date) is not null)
 );
 
 /* Table: Attachment
@@ -93,10 +93,9 @@ create table attachment (
   constraint "content is not a blob" check (typeof(content) = 'blob'),
 
   constraint "sha1_hash is not a valid SHA1 hash"
-  check (
-    sha1_hash is null or
-    (typeof(sha1_hash) = 'blob' and
-     length(sha1_hash) = 20)),
+  check (sha1_hash is null or
+         (typeof(sha1_hash) = 'blob' and
+          length(sha1_hash) = 20)),
 
   constraint "duplicate sha1_hash detected" unique (sha1_hash)
 );
@@ -166,10 +165,9 @@ create table construction_element_specification_section (
   references construction_element_specification_section,
 
   constraint "molio_section_guid is not a valid guid"
-  check (
-    molio_section_guid is null or
-    (typeof(molio_section_guid) = 'blob' and
-     length(molio_section_guid) = 16)),
+  check (molio_section_guid is null or
+         (typeof(molio_section_guid) = 'blob' and
+          length(molio_section_guid) = 16)),
 
   constraint "Non-integer value used for section_no"
   check (typeof(section_no) = 'integer')
@@ -245,10 +243,9 @@ create table work_specification_section (
   foreign key (parent_id) references work_specification_section,
 
   constraint "molio_section_guid is not a valid guid"
-  check (
-    molio_section_guid is null or
-    (typeof(molio_section_guid) = 'blob' and
-     length(molio_section_guid) = 16)),
+  check (molio_section_guid is null or
+         (typeof(molio_section_guid) = 'blob' and
+          length(molio_section_guid) = 16)),
 
   constraint "Non-integer value used for section_no"
   check (typeof(section_no) = 'integer')
