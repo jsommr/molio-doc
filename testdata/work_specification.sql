@@ -1,10 +1,10 @@
-insert into work_specification (work_specification_id, molio_specification_guid, work_area_code, work_area_name)
+insert into work_specification (id, molio_specification_guid, work_area_code, work_area_name)
 values (400, randomblob(16), '250', 'Murværk');
 
 insert into work_specification_section (
   work_specification_id,
   parent_id,
-  work_specification_section_id,
+  id,
   section_no,
   heading,
   molio_section_guid,
@@ -16,7 +16,7 @@ insert into work_specification_section (
 insert into work_specification_section (
   work_specification_id,
   parent_id,
-  work_specification_section_id,
+  id,
   section_no,
   heading,
   molio_section_guid,
@@ -26,7 +26,7 @@ insert into work_specification_section (
 );
 
 insert into work_specification_section_construction_element_specification (
-  work_specification_section_construction_element_specification_id,
+  id,
   work_specification_section_id,
   construction_element_specification_id
 ) values (
@@ -36,7 +36,7 @@ insert into work_specification_section_construction_element_specification (
 insert into work_specification_section (
   work_specification_id,
   parent_id,
-  work_specification_section_id,
+  id,
   section_no,
   heading,
   molio_section_guid,
@@ -46,7 +46,7 @@ insert into work_specification_section (
 );
 
 insert into work_specification_section_construction_element_specification (
-  work_specification_section_construction_element_specification_id,
+  id,
   work_specification_section_id,
   construction_element_specification_id
 ) values (

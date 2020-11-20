@@ -1,13 +1,13 @@
-insert into construction_element_specification (construction_element_specification_id, name, molio_specification_guid)
+insert into construction_element_specification (id, name, molio_specification_guid)
 values (200, 'En construction_element_specification', randomblob(16));
 
-insert into construction_element_specification (construction_element_specification_id, name, molio_specification_guid)
+insert into construction_element_specification (id, name, molio_specification_guid)
 values (201, 'En anden construction_element_specification', randomblob(16));
 
 insert into construction_element_specification_section (
   construction_element_specification_id,
   parent_id,
-  construction_element_specification_section_id,
+  id,
   section_no,
   heading,
   molio_section_guid,
@@ -20,7 +20,7 @@ insert into construction_element_specification_section (
 insert into construction_element_specification_section (
   construction_element_specification_id,
   parent_id,
-  construction_element_specification_section_id,
+  id,
   section_no,
   heading,
   molio_section_guid,
@@ -33,7 +33,7 @@ insert into construction_element_specification_section (
 insert into construction_element_specification_section (
   construction_element_specification_id,
   parent_id,
-  construction_element_specification_section_id,
+  id,
   section_no,
   heading,
   molio_section_guid,
@@ -46,7 +46,7 @@ insert into construction_element_specification_section (
 insert into construction_element_specification_section (
   construction_element_specification_id,
   parent_id,
-  construction_element_specification_section_id,
+  id,
   section_no,
   heading,
   molio_section_guid,
@@ -59,7 +59,7 @@ insert into construction_element_specification_section (
 insert into construction_element_specification_section (
   construction_element_specification_id,
   parent_id,
-  construction_element_specification_section_id,
+  id,
   section_no,
   heading,
   molio_section_guid,

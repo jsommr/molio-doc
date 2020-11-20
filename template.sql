@@ -91,7 +91,7 @@ end;
 
    Columns:
 
-      attachment_id - Primary key.
+      id - Primary key.
 
       mime_type - Type of binary, eg. image/bmp or application/pdf.
 
@@ -104,11 +104,11 @@ end;
          attached. Optional.
 */
 create table attachment (
-  attachment_id integer primary key,
-  mime_type     text    not null,
-  content       blob    not null,
-  name          text    not null default '',
-  sha1_hash     blob,
+  id        integer primary key,
+  mime_type text    not null,
+  content   blob    not null,
+  name      text    not null default '',
+  sha1_hash blob,
 
   constraint "content is not a blob"
   check (typeof(content) = 'blob'),
@@ -126,7 +126,7 @@ create table attachment (
    
    Columns:
 
-      construction_element_specification_id - Primary key.
+      id - Primary key.
 
       molio_specification_guid
          Identifier for external Molio texts related to the construction
@@ -136,9 +136,9 @@ create table attachment (
       name - Name of the construction element specification.
 */
 create table construction_element_specification (
-  construction_element_specification_id integer primary key,
-  molio_specification_guid              blob    not null,
-  name                                  text    not null,
+  id                       integer primary key,
+  molio_specification_guid blob    not null,
+  name                     text    not null,
 
   constraint "molio_specification_guid is not a valid guid"
   check (typeof(molio_specification_guid) = 'blob' and
@@ -149,7 +149,7 @@ create table construction_element_specification (
 
    Columns:
   
-      construction_element_specification_section_id - Primary key.
+      id - Primary key.
 
       construction_element_specification_id
          The construction element specification this section belongs to.
@@ -172,19 +172,19 @@ create table construction_element_specification (
       parent_id - The parent section. Optional.
 */
 create table construction_element_specification_section (
-  construction_element_specification_section_id integer primary key,
-  construction_element_specification_id         integer not null,
-  section_no                                    integer not null,
-  heading                                       text    not null,
-  body                                          text    not null default '',
-  molio_section_guid                            blob,
-  parent_id                                     integer,
+  id                                    integer primary key,
+  construction_element_specification_id integer not null,
+  section_no                            integer not null,
+  heading                               text    not null,
+  body                                  text    not null default '',
+  molio_section_guid                    blob,
+  parent_id                             integer,
 
   foreign key (construction_element_specification_id)
-  references construction_element_specification,
+  references construction_element_specification (id),
 
   foreign key (parent_id)
-  references construction_element_specification_section,
+  references construction_element_specification_section (id),
 
   constraint "molio_section_guid is not a valid guid"
   check (molio_section_guid is null or
@@ -197,7 +197,7 @@ create table construction_element_specification_section (
 
 create unique index construction_element_specification_section_unique_section_paths
 on construction_element_specification_section (
-  construction_element_specification_id,
+  id,
   ifnull(parent_id, -1), -- All nulls are treated as unique, convert to -1 instead
   section_no
 );
@@ -206,7 +206,7 @@ on construction_element_specification_section (
    
    Columns:
   
-      work_specification_id - Primary key.
+      id - Primary key.
 
       molio_specification_guid
          Identifier for external Molio texts related to the work specification.
@@ -217,7 +217,7 @@ on construction_element_specification_section (
       work_area_name
 */
 create table work_specification (
-  work_specification_id    integer primary key,
+  id                       integer primary key,
   molio_specification_guid blob    not null,
   work_area_code           text    not null,
   work_area_name           text    not null,
@@ -231,7 +231,7 @@ create table work_specification (
 
    Columns:
 
-      work_specification_section_id - Primary key.
+      id - Primary key.
 
       work_specification_id - The work specification this section belongs to.
 
@@ -253,16 +253,16 @@ create table work_specification (
       parent_id - The parent section. Optional.
 */
 create table work_specification_section (
-  work_specification_section_id integer primary key,
-  work_specification_id         integer not null,
-  section_no                    int     not null,
-  heading                       text    not null,
-  body                          text    not null default '',
-  molio_section_guid            blob,
-  parent_id                     integer,
+  id                    integer primary key,
+  work_specification_id integer not null,
+  section_no            int     not null,
+  heading               text    not null,
+  body                  text    not null default '',
+  molio_section_guid    blob,
+  parent_id             integer,
 
   foreign key (work_specification_id) references work_specification,
-  foreign key (parent_id) references work_specification_section,
+  foreign key (parent_id) references work_specification_section (id),
 
   constraint "molio_section_guid is not a valid guid"
   check (molio_section_guid is null or
@@ -279,15 +279,15 @@ create table work_specification_section (
    `section_construction_element_specification`.
 */
 create table work_specification_section_construction_element_specification (
-  work_specification_section_construction_element_specification_id integer primary key,
-  work_specification_section_id                                    integer not null,
-  construction_element_specification_id                            integer not null,
+  id                                    integer primary key,
+  work_specification_section_id         integer not null,
+  construction_element_specification_id integer not null,
 
   foreign key (work_specification_section_id)
-  references work_specification_section,
+  references work_specification_section (id),
 
   foreign key (construction_element_specification_id)
-  references construction_element_specification,
+  references construction_element_specification (id),
 
   constraint "Same construction_element_specification cannot be referenced more than once for the same work_specification_section"
   unique (work_specification_section_id, construction_element_specification_id)
@@ -295,7 +295,7 @@ create table work_specification_section_construction_element_specification (
 
 create unique index work_specification_section_unique_section_paths
 on work_specification_section (
-  work_specification_id,
+  id,
   ifnull(parent_id, -1), -- All nulls are treated as unique, convert to -1 instead
   section_no
 );
@@ -323,7 +323,7 @@ create table custom_data (
 
    Columns:
 
-      work_specification_section_id - Used for joins.
+      id - A Work Specification Section id. Used for joins.
 
       section_path
          Contains the section_no path to the row, separated by a dot (.)
@@ -340,13 +340,13 @@ create table custom_data (
 */
 create view work_specification_section_path as
   with recursive tree (
-    work_specification_section_id,
+    id,           -- integer
     section_no,   -- integer
     section_path, -- text
     level         -- integer
   ) as (
     select
-      work_specification_section_id,
+      id,
       section_no,
       cast(section_no as text),
       1 as level
@@ -354,14 +354,14 @@ create view work_specification_section_path as
     where parent_id is null
     union all
     select
-      node.work_specification_section_id,
+      node.id,
       node.section_no,
       tree.section_path || '.' || node.section_no,
       tree.level + 1
     from work_specification_section node, tree
-    where node.parent_id = tree.work_specification_section_id
+    where node.parent_id = tree.id
   )
-  select work_specification_section_id, section_path, level from tree;
+  select id, section_path, level from tree;
 
 /* View: Construction Element Specification Section Path
 
@@ -371,7 +371,7 @@ create view work_specification_section_path as
 
    Columns:
 
-      construction_element_specification_section_id - Used for joins.
+      id - A Construction Element Specification Section id. Used for joins.
 
       section_path
          Contains the section_no path to the row, separated by a dot (.)
@@ -388,13 +388,13 @@ create view work_specification_section_path as
 */
 create view construction_element_specification_section_path as
   with recursive tree (
-    construction_element_specification_section_id,
+    id,           -- integer
     section_no,   -- integer
     section_path, -- text
     level         -- integer
   ) as (
     select
-      construction_element_specification_section_id,
+      id,
       section_no,
       cast(section_no as text),
       1 as level
@@ -402,11 +402,11 @@ create view construction_element_specification_section_path as
     where parent_id is null
     union all
     select
-      node.construction_element_specification_section_id,
+      node.id,
       node.section_no,
       tree.section_path || '.' || node.section_no,
       tree.level + 1
     from construction_element_specification_section node, tree
-    where node.parent_id = tree.construction_element_specification_section_id
+    where node.parent_id = tree.id
   )
-  select construction_element_specification_section_id, section_path, level from tree;
+  select id, section_path, level from tree;
