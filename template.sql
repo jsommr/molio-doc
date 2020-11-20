@@ -97,7 +97,7 @@ end;
 
       content - Binary data. Encode as UTF-8 if storing text.
 
-      name - Attachment name. Optional.
+      name - Attachment name. Defaults to an empty string.
 
       sha1_hash
          SHA1 hash of `content`. Used to determine if a file is already
@@ -107,7 +107,7 @@ create table attachment (
   attachment_id integer primary key,
   mime_type     text    not null,
   content       blob    not null,
-  name          text,
+  name          text    not null default '',
   sha1_hash     blob,
 
   constraint "content is not a blob"
