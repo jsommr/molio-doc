@@ -7,7 +7,12 @@ pragma user_version = 1;
 /* Table: Project
 
    This table is first set when the template is saved as a document for an
-   actual project.
+   actual project. In other words, a version containing Molio specifications
+   is downloaded from molio.dk, uploaded to an editor, changed according to
+   the tendering organization's needs, and used as a template for new projects.
+   When going from template -> project, this table is set.
+   
+   Only one project per file is supported.
 
    Columns:
 
@@ -17,46 +22,50 @@ pragma user_version = 1;
          more mspec files are the same project.
 
       name - Project name.
-
-      release_date
-         When this document is sent to a recipient, someone who will perform
-         what is specified. Format: YYYY-MM-DD
-
-      revision_date
-         Last document change date. Update whenever the user saves the
-         document. Defaults to current date. Format: YYYY-MM-DD
-         
-      revision - Incremented whenever the user saves the document.
-
-      contract - Works carried out in accordance with an agreement.
-
+      
       created_by_organization
          Name of the organization that created this document.
 
       created_by - Fullname of the creator of this document.
 
+      revision_date
+         Last document change date. Update whenever the user saves the
+         document. Defaults to current date. Format: YYYY-MM-DD
+         
+      revision
+         Incremented (by trigger) whenever revision_date is updated.
+         Defaults to 1.
+
+      contract
+         Defaults to an empty string if the contract is unknown when creating
+         the project.
+
       reviewed_by - Fullname of the reviewer. Optional.
 
       approved_by - Fullname of the person who approved this document. Optional.
+      
+      release_date
+         When this document is sent to a recipient, someone who will perform
+         what is specified. Format: YYYY-MM-DD. Optional.
 */
 create table project (
   project_guid            blob    primary key,
   name                    text    not null,
-  release_date            text    not null,
-  revision_date           text    not null default (date()),
-  revision                integer not null default 0,
   created_by_organization text    not null,
-  contract                text    not null,
   created_by              text    not null,
+  revision_date           text    not null default (date()),
+  revision                integer not null default 1,
+  contract                text    not null default '',
   reviewed_by             text,
   approved_by             text,
+  release_date            text,
   
   constraint "project_guid is not a valid guid"
   check (typeof(project_guid) = 'blob' and
          length(project_guid) = 16),
 
   constraint "Invalid date used for release_date"
-  check (date(release_date) is not null),
+  check (release_date is null or date(release_date) is not null),
 
   constraint "Non-integer value used for revision"
   check (typeof(revision) = 'integer'),
@@ -64,6 +73,17 @@ create table project (
   constraint "Invalid date used for revision_date"
   check (date(revision_date) is not null)
 );
+
+create trigger project_increment_revision update of revision_date on project
+begin
+ update project set revision = revision + 1;
+end;
+   
+create trigger project_constraint_to_one_row before insert on project
+when (select count(*) from project) >= 1
+begin
+  select raise(fail, 'Only one project per file is supported.');
+end;
 
 /* Table: Attachment
 
@@ -90,14 +110,16 @@ create table attachment (
   name          text,
   sha1_hash     blob,
 
-  constraint "content is not a blob" check (typeof(content) = 'blob'),
+  constraint "content is not a blob"
+  check (typeof(content) = 'blob'),
 
   constraint "sha1_hash is not a valid SHA1 hash"
   check (sha1_hash is null or
          (typeof(sha1_hash) = 'blob' and
           length(sha1_hash) = 20)),
 
-  constraint "duplicate sha1_hash detected" unique (sha1_hash)
+  constraint "duplicate sha1_hash detected"
+  unique (sha1_hash)
 );
 
 /* Table: Construction Element Specification
@@ -308,7 +330,7 @@ create table custom_data (
          If parent_id points to a parent with section_no = 3 and the row contains
          section_no = 1, then section_path = 3.1 (column type = text).
 
-      level - The level in the tree of sections, starting at 0.
+      level - The level in the tree of sections, starting at 1.
 
    Example:
 
@@ -319,15 +341,15 @@ create table custom_data (
 create view work_specification_section_path as
   with recursive tree (
     work_specification_section_id,
-    section_no,
-    section_path,
-    level
+    section_no,   -- integer
+    section_path, -- text
+    level         -- integer
   ) as (
     select
       work_specification_section_id,
       section_no,
       cast(section_no as text),
-      0 as level
+      1 as level
     from work_specification_section
     where parent_id is null
     union all
@@ -356,7 +378,7 @@ create view work_specification_section_path as
          If parent_id points to a parent with section_no = 3 and the row contains
          section_no = 1, then section_path = 3.1 (column type = text).
 
-      level - The level in the tree of sections, starting at 0.
+      level - The level in the tree of sections, starting at 1.
 
    Example:
 
@@ -367,15 +389,15 @@ create view work_specification_section_path as
 create view construction_element_specification_section_path as
   with recursive tree (
     construction_element_specification_section_id,
-    section_no,
-    section_path,
-    level
+    section_no,   -- integer
+    section_path, -- text
+    level         -- integer
   ) as (
     select
       construction_element_specification_section_id,
       section_no,
       cast(section_no as text),
-      0 as level
+      1 as level
     from construction_element_specification_section
     where parent_id is null
     union all
