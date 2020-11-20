@@ -195,7 +195,7 @@ create table construction_element_specification_section (
   check (typeof(section_no) = 'integer')
 );
 
-create unique index construction_element_specification_section_unique_idx
+create unique index construction_element_specification_section_unique_section_paths
 on construction_element_specification_section (
   construction_element_specification_id,
   ifnull(parent_id, -1), -- All nulls are treated as unique, convert to -1 instead
@@ -293,7 +293,7 @@ create table work_specification_section_construction_element_specification (
   unique (work_specification_section_id, construction_element_specification_id)
 );
 
-create unique index work_specification_section_unique_idx
+create unique index work_specification_section_unique_section_paths
 on work_specification_section (
   work_specification_id,
   ifnull(parent_id, -1), -- All nulls are treated as unique, convert to -1 instead
