@@ -258,8 +258,11 @@ create table work_spec_section (
   molio_section_guid blob,
   parent_id          integer,
 
-  foreign key (work_spec_id) references work_spec,
-  foreign key (parent_id) references work_spec_section (id),
+  foreign key (work_spec_id)
+  references work_spec (id),
+
+  foreign key (parent_id)
+  references work_spec_section (id),
 
   constraint "molio_section_guid is not a valid guid"
   check (molio_section_guid is null or
