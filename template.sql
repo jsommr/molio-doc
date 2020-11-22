@@ -32,9 +32,7 @@ pragma user_version = 1;
          Last document change date. Update whenever the user saves the
          document. Defaults to current date. Format: YYYY-MM-DD
          
-      revision
-         Incremented (by trigger) whenever revision_date is updated.
-         Defaults to 1.
+      revision - Increment whenever revision_date is updated. Defaults to 1.
 
       contract
          Defaults to an empty string if the contract is unknown when creating
@@ -73,11 +71,6 @@ create table project (
   constraint "Invalid date used for revision_date"
   check (date(revision_date) is not null)
 );
-
-create trigger project_increment_revision update of revision_date on project
-begin
- update project set revision = revision + 1;
-end;
    
 create trigger project_constraint_to_one_row before insert on project
 when (select count(*) from project) >= 1
