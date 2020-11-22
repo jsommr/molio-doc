@@ -1,11 +1,11 @@
-insert into construction_element_specification (id, name, molio_specification_guid)
-values (200, 'En construction_element_specification', randomblob(16));
+insert into construction_element_spec (id, name, molio_spec_guid)
+values (200, 'En construction_element_spec', randomblob(16));
 
-insert into construction_element_specification (id, name, molio_specification_guid)
-values (201, 'En anden construction_element_specification', randomblob(16));
+insert into construction_element_spec (id, name, molio_spec_guid)
+values (201, 'En anden construction_element_spec', randomblob(16));
 
-insert into construction_element_specification_section (
-  construction_element_specification_id,
+insert into construction_element_spec_section (
+  construction_element_spec_id,
   parent_id,
   id,
   section_no,
@@ -17,8 +17,8 @@ insert into construction_element_specification_section (
   'Arbejdet omfatter levering og montering af:\n•\tBlank skalmur med varmeisolering foran facade, gavle og false\n•\tTegloverliggere, fugtspærre, kuldebrosisolering, bindere, armering, konsoljern, m.m.\n•\tSålbænke, præfabrikeret beton'
 );
 
-insert into construction_element_specification_section (
-  construction_element_specification_id,
+insert into construction_element_spec_section (
+  construction_element_spec_id,
   parent_id,
   id,
   section_no,
@@ -30,8 +30,8 @@ insert into construction_element_specification_section (
   'Stk. 1. Leverandøren bør, inden arbejdet påbegyndes, sikre sig, at det overordnede grundlag for et konditionsmæssigt arbejde er til stede. Såfremt dette ikke er tilfældet, skal der straks rettes henvendelse til byggeledelsen. \n\nStk. 2. Såfremt det under arbejdet konstateres, at grundlaget for et konditionsmæssigt arbejde ikke er tilstede, rettes straks henvendelse til byggeledelsen.'
 );
 
-insert into construction_element_specification_section (
-  construction_element_specification_id,
+insert into construction_element_spec_section (
+  construction_element_spec_id,
   parent_id,
   id,
   section_no,
@@ -43,8 +43,8 @@ insert into construction_element_specification_section (
   'Stk. 1. Leverandøren bør, inden arbejdet påbegyndes, sikre sig, at det overordnede grundlag for et konditionsmæssigt arbejde er til stede. Såfremt dette ikke er tilfældet, skal der straks rettes henvendelse til byggeledelsen. \n\nStk. 2. Såfremt det under arbejdet konstateres, at grundlaget for et konditionsmæssigt arbejde ikke er tilstede, rettes straks henvendelse til byggeledelsen.'
 );
 
-insert into construction_element_specification_section (
-  construction_element_specification_id,
+insert into construction_element_spec_section (
+  construction_element_spec_id,
   parent_id,
   id,
   section_no,
@@ -56,8 +56,8 @@ insert into construction_element_specification_section (
   'Stk. 1. Bygningsdelsbeskrivelse og tegninger/bygningsmodeller gælder frem for basis_specification.\n\nStk. 2. Bygningsdelsbeskrivelse gælder frem for byggesagsbeskrivelsen.\n\nStk. 3. Hvor der i basis_specificationr og construction_element_specificationr er anvendt forkortelser for bekendtgørelser og lignende henvises til byggesagsbeskrivelsen...'
 );
 
-insert into construction_element_specification_section (
-  construction_element_specification_id,
+insert into construction_element_spec_section (
+  construction_element_spec_id,
   parent_id,
   id,
   section_no,
