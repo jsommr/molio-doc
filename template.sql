@@ -38,9 +38,11 @@ pragma user_version = 1;
          Defaults to an empty string if the contract is unknown when creating
          the project.
 
-      reviewed_by - Fullname of the reviewer. Optional.
+      reviewed_by - Fullname of the reviewer. Defaults to empty string.
 
-      approved_by - Fullname of the person who approved this document. Optional.
+      approved_by
+         Fullname of the person who approved this document. Defaults to empty
+         string.
       
       release_date
          When this document is sent to a recipient, someone who will perform
@@ -54,8 +56,8 @@ create table project (
   revision_date           text    not null default (date()),
   revision                integer not null default 1,
   contract                text    not null default '',
-  reviewed_by             text,
-  approved_by             text,
+  reviewed_by             text    not null default '',
+  approved_by             text    not null default '',
   release_date            text,
   
   constraint "project_guid is not a valid guid"
