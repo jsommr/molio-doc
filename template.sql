@@ -121,21 +121,22 @@ create table attachment (
 
       id - Primary key.
 
+      name - Name of the construction element specification.
+
       molio_specification_guid
          Identifier for external Molio texts related to the construction
          element specification. Used when requesting basis specifications
-         through the api.
-
-      name - Name of the construction element specification.
+         through the api. Optional.
 */
 create table construction_element_specification (
   id                       integer primary key,
-  molio_specification_guid blob    not null,
   name                     text    not null,
+  molio_specification_guid blob,
 
   constraint "molio_specification_guid is not a valid guid"
-  check (typeof(molio_specification_guid) = 'blob' and
-         length(molio_specification_guid) = 16)
+  check (molio_specification_guid is null or
+         (typeof(molio_specification_guid) = 'blob' and
+          length(molio_specification_guid) = 16))
 );
 
 /* Table: Construction Element Specification Section
@@ -201,23 +202,24 @@ on construction_element_specification_section (
   
       id - Primary key.
 
-      molio_specification_guid
-         Identifier for external Molio texts related to the work specification.
-         Used when requesting basis specifications through the api.
-
       work_area_code
 
       work_area_name
+
+      molio_specification_guid
+         Identifier for external Molio texts related to the work specification.
+         Used when requesting basis specifications through the api.
 */
 create table work_specification (
   id                       integer primary key,
-  molio_specification_guid blob    not null,
   work_area_code           text    not null,
   work_area_name           text    not null,
+  molio_specification_guid blob,
 
   constraint "molio_specification_guid is not a valid guid"
-  check (typeof(molio_specification_guid) = 'blob' and
-         length(molio_specification_guid) = 16)
+  check (molio_specification_guid is null or
+         (typeof(molio_specification_guid) = 'blob' and
+          length(molio_specification_guid) = 16))
 );
 
 /* Table: Work Specification Section
