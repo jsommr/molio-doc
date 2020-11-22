@@ -208,7 +208,7 @@ on construction_element_specification_section (
 
       molio_specification_guid
          Identifier for external Molio texts related to the work specification.
-         Used when requesting basis specifications through the api.
+         Used when requesting basis specifications through the api. Optional.
 */
 create table work_specification (
   id                       integer primary key,
