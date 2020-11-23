@@ -300,6 +300,54 @@ on work_spec_section (
   section_no
 );
 
+/* Table: Control Plan PDF
+
+   Only one control plan pdf per file is supported.
+
+   Columns:
+
+      id - Primary key.
+
+      content - The PDF.
+*/
+create table control_plan_pdf (
+  id      integer primary key,
+  content blob not null,
+
+  constraint "content is not a blob"
+  check (typeof(content) = 'blob')
+);
+
+create trigger control_plan_pdf_constraint_to_one_row before insert on control_plan_pdf
+when (select count(*) from control_plan_pdf) >= 1
+begin
+  select raise(fail, 'Only one control plan pdf per file is supported.');
+end;
+
+/* Table: Interface Diagram PDF
+
+   Only one interface diagram pdf per file is supported.
+
+   Columns:
+
+      id - Primary key.
+
+      content - The PDF.
+*/
+create table interface_diagram_pdf (
+  id      integer primary key,
+  content blob not null,
+
+  constraint "content is not a blob"
+  check (typeof(content) = 'blob')
+);
+
+create trigger interface_diagram_pdf_constraint_to_one_row before insert on interface_diagram_pdf
+when (select count(*) from interface_diagram_pdf) >= 1
+begin
+  select raise(fail, 'Only one interface diagram pdf per file is supported.');
+end;
+
 /* Table: Custom Data
 
    Used to store any kind of custom key-value pairs.
