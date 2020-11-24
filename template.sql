@@ -4,6 +4,43 @@ pragma foreign_keys = on;
 -- File format version
 pragma user_version = 1;
 
+/* Table: Metadata
+
+   Only one metadata row per file is supported.
+
+   Columns:
+
+      id - Primary key.
+
+      created_by_system - Name of the system that created this file.
+
+      created_date
+         Date time (UTC) this file was created. Defaults to current date and
+         time. Format: YYYY-MM-DD hh:mm:ss
+
+      modified_date
+         Date time (UTC) this file was last modified. Defaults to current date
+         and time. Format: YYYY-MM-DD hh:mm:ss
+*/
+create table metadata (
+  id                integer primary key,
+  created_by_system text    not null,
+  created_date      text    not null default (datetime('now', 'utc')),
+  modified_date     text    not null default (datetime('now', 'utc')),
+
+  constraint "Invalid datetime used for created_date"
+  check (datetime(created_date) is not null),
+
+  constraint "Invalid datetime used for modified_date"
+  check (datetime(modified_date) is not null)
+);
+
+create trigger metadata_constraint_to_one_row before insert on metadata
+when (select count(*) from metadata) >= 1
+begin
+  select raise(fail, 'Only one metadata row per file is supported.');
+end;
+
 /* Table: Project
 
    This table is first set when the template is saved as a document for an
@@ -23,55 +60,22 @@ pragma user_version = 1;
 
       name - Project name.
       
-      created_by_organization
-         Name of the organization that created this document.
+      builder - Name of the builder for this project. Optional.
 
-      created_by - Fullname of the creator of this document.
-
-      revision_date
-         Last document change date. Update whenever the user saves the
-         document. Defaults to current date. Format: YYYY-MM-DD
-         
-      revision - Increment whenever revision_date is updated. Defaults to 1.
-
-      contract
-         Defaults to an empty string if the contract is unknown when creating
-         the project.
-
-      reviewed_by - Fullname of the reviewer. Defaults to empty string.
-
-      approved_by
-         Fullname of the person who approved this document. Defaults to empty
-         string.
-      
-      release_date
-         When this document is sent to a recipient, someone who will perform
-         what is specified. Format: YYYY-MM-DD. Optional.
+      project_number - custom project number. Optional.
 */
 create table project (
-  project_guid            blob    primary key,
-  name                    text    not null,
-  created_by_organization text    not null,
-  created_by              text    not null,
-  revision_date           text    not null default (date()),
-  revision                integer not null default 1,
-  contract                text    not null default '',
-  reviewed_by             text    not null default '',
-  approved_by             text    not null default '',
-  release_date            text,
+  project_guid   blob    primary key,
+  name           text    not null,
+  builder        text,
+  project_number integer,
   
   constraint "project_guid is not a valid guid"
   check (typeof(project_guid) = 'blob' and
          length(project_guid) = 16),
 
-  constraint "Invalid date used for release_date"
-  check (release_date is null or date(release_date) is not null),
-
-  constraint "Non-integer value used for revision"
-  check (typeof(revision) = 'integer'),
-
-  constraint "Invalid date used for revision_date"
-  check (date(revision_date) is not null)
+  constraint "Non-integer value used for project_number"
+  check (typeof(project_number) = 'integer')
 );
    
 create trigger project_constraint_to_one_row before insert on project
@@ -117,6 +121,64 @@ create table attachment (
   unique (sha1_hash)
 );
 
+/* Table: Control Plan
+
+   Columns:
+
+      id - Primary key.
+*/
+create table control_plan (
+  id integer primary key
+);
+
+/* Table: Control Plan Section
+
+   Columns:
+
+      id - Primary key.
+
+      control_plan_id - The control plan this section belongs to.
+
+      section_no - Section number for this section. Use digits only.
+
+      heading - Section heading.
+
+      --- TODO: document all columns ---
+
+      parent_id - The parent section. Optional.
+*/
+create table control_plan_section (
+  id                  integer primary key,
+  control_plan_id     integer not null,
+  section_no          integer not null,
+  heading             text    not null,
+  subject             text    not null default '',
+  reference           text    not null default '',
+  method              text    not null default '',
+  quantity            text    not null default '',
+  time                text    not null default '',
+  acceptance_criteria text    not null default '',
+  parent_id           integer,
+
+  foreign key (control_plan_id)
+  references control_plan (id),
+
+  foreign key (parent_id)
+  references control_plan_section (id),
+
+  constraint "Non-integer value used for section_no"
+  check (typeof(section_no) = 'integer')
+);
+
+create unique index control_plan_section_unique_section_paths
+on control_plan_section (
+  id,
+  ifnull(parent_id, -1), -- All nulls are treated as unique, convert to -1 instead
+  section_no
+);
+
+
+
 /* Table: Construction Element Specification
    
    Columns:
@@ -125,20 +187,53 @@ create table attachment (
 
       name - Name of the construction element specification.
 
+      created_by_organization
+         Name of the organization that created this document.
+
+      created_by - Fullname of the creator of this document.
+
+      revision_date - Defaults to current date. Format: YYYY-MM-DD
+         
+      revision - Increment whenever revision_date is updated. Defaults to 1.
+
+      reviewed_by - Fullname of the reviewer. Defaults to empty string.
+
+      approved_by
+         Fullname of the person who approved this document. Defaults to empty
+         string.
+
       molio_spec_guid
          Identifier for external Molio texts related to the construction
          element specification. Used when requesting basis specifications
          through the api. Optional.
+
+      control_plan_id - Reference to associated control plan.
 */
 create table construction_element_spec (
-  id              integer primary key,
-  name            text    not null,
-  molio_spec_guid blob,
+  id                      integer primary key,
+  name                    text    not null,
+  created_by_organization text    not null,
+  created_by              text    not null,
+  revision_date           text    not null default (date()),
+  revision                integer not null default 1,
+  reviewed_by             text    not null default '',
+  approved_by             text    not null default '',
+  molio_spec_guid         blob,
+  control_plan_id         integer,
+
+  foreign key (control_plan_id)
+  references control_plan (id),
 
   constraint "molio_spec_guid is not a valid guid"
   check (molio_spec_guid is null or
          (typeof(molio_spec_guid) = 'blob' and
-          length(molio_spec_guid) = 16))
+          length(molio_spec_guid) = 16)),
+
+  constraint "Non-integer value used for revision"
+  check (typeof(revision) = 'integer'),
+
+  constraint "Invalid date used for revision_date"
+  check (date(revision_date) is not null)
 );
 
 /* Table: Construction Element Specification Section
@@ -208,20 +303,48 @@ on construction_element_spec_section (
 
       work_area_name
 
+      created_by_organization
+         Name of the organization that created this document.
+
+      created_by - Fullname of the creator of this document.
+
+      revision_date - Defaults to current date. Format: YYYY-MM-DD
+         
+      revision - Increment whenever revision_date is updated. Defaults to 1.
+
+      reviewed_by - Fullname of the reviewer. Defaults to empty string.
+
+      approved_by
+         Fullname of the person who approved this document. Defaults to empty
+         string.
+
       molio_spec_guid
          Identifier for external Molio texts related to the work specification.
          Used when requesting basis specifications through the api. Optional.
 */
 create table work_spec (
-  id              integer primary key,
-  work_area_code  text    not null,
-  work_area_name  text    not null,
-  molio_spec_guid blob,
+  id                      integer primary key,
+  work_area_code          text    not null,
+  work_area_name          text    not null,
+  created_by_organization text    not null,
+  created_by              text    not null,
+  revision_date           text    not null default (date()),
+  revision                integer not null default 1,
+  reviewed_by             text    not null default '',
+  approved_by             text    not null default '',
+  molio_spec_guid         blob,
+  -- TODO: foreign key to contract-table
 
   constraint "molio_spec_guid is not a valid guid"
   check (molio_spec_guid is null or
          (typeof(molio_spec_guid) = 'blob' and
-          length(molio_spec_guid) = 16))
+          length(molio_spec_guid) = 16)),
+
+  constraint "Non-integer value used for revision"
+  check (typeof(revision) = 'integer'),
+
+  constraint "Invalid date used for revision_date"
+  check (date(revision_date) is not null)
 );
 
 /* Table: Work Specification Section
@@ -300,30 +423,6 @@ on work_spec_section (
   section_no
 );
 
-/* Table: Control Plan PDF
-
-   Only one control plan pdf per file is supported.
-
-   Columns:
-
-      id - Primary key.
-
-      content - The PDF.
-*/
-create table control_plan_pdf (
-  id      integer primary key,
-  content blob not null,
-
-  constraint "content is not a blob"
-  check (typeof(content) = 'blob')
-);
-
-create trigger control_plan_pdf_constraint_to_one_row before insert on control_plan_pdf
-when (select count(*) from control_plan_pdf) >= 1
-begin
-  select raise(fail, 'Only one control plan pdf per file is supported.');
-end;
-
 /* Table: Interface Diagram PDF
 
    Only one interface diagram pdf per file is supported.
@@ -336,7 +435,7 @@ end;
 */
 create table interface_diagram_pdf (
   id      integer primary key,
-  content blob not null,
+  content blob    not null,
 
   constraint "content is not a blob"
   check (typeof(content) = 'blob')
