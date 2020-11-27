@@ -1,8 +1,22 @@
-insert into construction_element_spec (id, name, molio_spec_guid)
-values (200, 'En construction_element_spec', randomblob(16));
+insert into construction_element_spec (
+  id,
+  name,
+  created_by_organization,
+  created_by,
+  molio_spec_guid
+) values (
+  200, 'En construction_element_spec', 'Test org', 'John Doe', randomblob(16)
+);
 
-insert into construction_element_spec (id, name, molio_spec_guid)
-values (201, 'En anden construction_element_spec', randomblob(16));
+insert into construction_element_spec (
+  id,
+  name,
+  created_by_organization,
+  created_by,
+  molio_spec_guid
+) values (
+  201, 'En anden construction_element_spec', 'Test org', 'John Doe', randomblob(16)
+);
 
 insert into construction_element_spec_section (
   construction_element_spec_id,
@@ -67,4 +81,17 @@ insert into construction_element_spec_section (
 ) values (
   200, 303, 304, 1, 'Generelt', null,
   'Stk. 1. Bygningsdelsbeskrivelse og tegninger/bygningsmodeller gælder frem for basis_specification.\r\n\r\nStk. 2. Bygningsdelsbeskrivelse gælder frem for byggesagsbeskrivelsen.\r\n\r\nStk. 3. Hvor der i basis_specificationr og construction_element_specificationr er anvendt forkortelser for bekendtgørelser og lignende henvises til byggesagsbeskrivelsen for den fulde...'
+);
+
+insert into construction_element_spec_section (
+  construction_element_spec_id,
+  parent_id,
+  id,
+  section_no,
+  heading,
+  molio_section_guid,
+  body
+) values (
+  201, null, 350, 1, 'OMFANG', null,
+  'Arbejdet omfatter levering og montering af:\n•\tBlank skalmur med varmeisolering foran facade, gavle og false\n•\tTegloverliggere, fugtspærre, kuldebrosisolering, bindere, armering, konsoljern, m.m.\n•\tSålbænke, præfabrikeret beton'
 );

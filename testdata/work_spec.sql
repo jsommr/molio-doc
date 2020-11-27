@@ -1,5 +1,13 @@
-insert into work_spec (id, molio_spec_guid, work_area_code, work_area_name)
-values (400, randomblob(16), '250', 'Murværk');
+insert into work_spec (
+  id,
+  molio_spec_guid,
+  work_area_code,
+  work_area_name,
+  created_by_organization,
+  created_by
+) values (
+  400, randomblob(16), '250', 'Murværk', 'Test org', 'Jane Doe'
+);
 
 insert into work_spec_section (
   work_spec_id,

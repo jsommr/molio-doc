@@ -4,43 +4,6 @@ pragma foreign_keys = on;
 -- File format version
 pragma user_version = 1;
 
-/* Table: Metadata
-
-   Only one metadata row per file is supported.
-
-   Columns:
-
-      id - Primary key.
-
-      created_by_system - Name of the system that created this file.
-
-      created_date
-         Date time (UTC) this file was created. Defaults to current date and
-         time. Format: YYYY-MM-DD hh:mm:ss
-
-      modified_date
-         Date time (UTC) this file was last modified. Defaults to current date
-         and time. Format: YYYY-MM-DD hh:mm:ss
-*/
-create table metadata (
-  id                integer primary key,
-  created_by_system text    not null,
-  created_date      text    not null default (datetime('now', 'utc')),
-  modified_date     text    not null default (datetime('now', 'utc')),
-
-  constraint "Invalid datetime used for created_date"
-  check (datetime(created_date) is not null),
-
-  constraint "Invalid datetime used for modified_date"
-  check (datetime(modified_date) is not null)
-);
-
-create trigger metadata_constraint_to_one_row before insert on metadata
-when (select count(*) from metadata) >= 1
-begin
-  select raise(fail, 'Only one metadata row per file is supported.');
-end;
-
 /* Table: Project
 
    This table is first set when the template is saved as a document for an
@@ -59,23 +22,39 @@ end;
          more mspec files are the same project.
 
       name - Project name.
-      
-      builder - Name of the builder for this project. Optional.
 
-      project_number - custom project number. Optional.
+      created_by_system - Name of the system that created the project.
+
+      created_date
+         Date time (UTC) the project was created. Defaults to current date and
+         time. Format: YYYY-MM-DD hh:mm:ss
+
+      modified_date
+         Date time (UTC) the project was last modified. Defaults to current date
+         and time. Format: YYYY-MM-DD hh:mm:ss
+      
+      builder - Name of the builder for this project.
+
+      project_key - Custom project key.
 */
 create table project (
-  project_guid   blob    primary key,
-  name           text    not null,
-  builder        text,
-  project_number integer,
+  project_guid      blob primary key,
+  name              text not null,
+  created_by_system text not null,
+  created_date      text not null default (datetime('now', 'utc')),
+  modified_date     text not null default (datetime('now', 'utc')),
+  builder           text not null default '',
+  project_key       text not null default '',
+
+  constraint "Invalid datetime used for created_date"
+  check (datetime(created_date) is not null),
+
+  constraint "Invalid datetime used for modified_date"
+  check (datetime(modified_date) is not null),
   
   constraint "project_guid is not a valid guid"
   check (typeof(project_guid) = 'blob' and
-         length(project_guid) = 16),
-
-  constraint "Non-integer value used for project_number"
-  check (typeof(project_number) = 'integer')
+         length(project_guid) = 16)
 );
    
 create trigger project_constraint_to_one_row before insert on project
@@ -176,8 +155,6 @@ on control_plan_section (
   ifnull(parent_id, -1), -- All nulls are treated as unique, convert to -1 instead
   section_no
 );
-
-
 
 /* Table: Construction Element Specification
    
@@ -396,6 +373,13 @@ create table work_spec_section (
   check (typeof(section_no) = 'integer')
 );
 
+create unique index work_spec_section_unique_section_paths
+on work_spec_section (
+  id,
+  ifnull(parent_id, -1), -- All nulls are treated as unique, convert to -1 instead
+  section_no
+);
+
 /* Table: Work Specification Section Construction Element Specification
 
    Many-to-many relationship table for `work_spec_section` and
@@ -414,13 +398,6 @@ create table work_spec_section_construction_element_spec (
 
   constraint "Same construction_element_spec cannot be referenced more than once for the same work_spec_section"
   unique (work_spec_section_id, construction_element_spec_id)
-);
-
-create unique index work_spec_section_unique_section_paths
-on work_spec_section (
-  id,
-  ifnull(parent_id, -1), -- All nulls are treated as unique, convert to -1 instead
-  section_no
 );
 
 /* Table: Interface Diagram PDF
@@ -477,7 +454,7 @@ create table custom_data (
          If parent_id points to a parent with section_no = 3 and the row contains
          section_no = 1, then section_path = 3.1 (column type = text).
 
-      level - The level in the tree of sections, starting at 1.
+      depth - The depth in the tree of sections, starting at 1.
 
    Example:
 
@@ -490,13 +467,13 @@ create view work_spec_section_path as
     id,           -- integer
     section_no,   -- integer
     section_path, -- text
-    level         -- integer
+    depth         -- integer
   ) as (
     select
       id,
       section_no,
       cast(section_no as text),
-      1 as level
+      1 as depth
     from work_spec_section
     where parent_id is null
     union all
@@ -504,11 +481,11 @@ create view work_spec_section_path as
       node.id,
       node.section_no,
       tree.section_path || '.' || node.section_no,
-      tree.level + 1
+      tree.depth + 1
     from work_spec_section node, tree
     where node.parent_id = tree.id
   )
-  select id, section_path, level from tree;
+  select id, section_path, depth from tree;
 
 /* View: Construction Element Specification Section Path
 
@@ -525,7 +502,7 @@ create view work_spec_section_path as
          If parent_id points to a parent with section_no = 3 and the row contains
          section_no = 1, then section_path = 3.1 (column type = text).
 
-      level - The level in the tree of sections, starting at 1.
+      depth - The depth in the tree of sections, starting at 1.
 
    Example:
 
@@ -538,13 +515,13 @@ create view construction_element_spec_section_path as
     id,           -- integer
     section_no,   -- integer
     section_path, -- text
-    level         -- integer
+    depth         -- integer
   ) as (
     select
       id,
       section_no,
       cast(section_no as text),
-      1 as level
+      1 as depth
     from construction_element_spec_section
     where parent_id is null
     union all
@@ -552,8 +529,8 @@ create view construction_element_spec_section_path as
       node.id,
       node.section_no,
       tree.section_path || '.' || node.section_no,
-      tree.level + 1
+      tree.depth + 1
     from construction_element_spec_section node, tree
     where node.parent_id = tree.id
   )
-  select id, section_path, level from tree;
+  select id, section_path, depth from tree;
